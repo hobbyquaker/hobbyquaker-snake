@@ -46,7 +46,7 @@ app.post('/move', (request, response) => {
 
 
     const {x, y} = request.body.you.body[0];
-    console.log(request.body.turn, request.body.you.body);
+    console.log(request.body.turn, request.body.you.body[0]);
 
     const possible = new Set(['up', 'down', 'left', 'right']);
 
@@ -55,19 +55,22 @@ app.post('/move', (request, response) => {
     if (y === 0) possible.delete('up');
     if (y === (height - 1)) possible.delete('down');
 
-    request.body.you.body.forEach(coord => {
-        if (x === coord.x && y === (coord.y + 1)) {
-            possible.delete('up');
-        }
-        if (x === coord.x && y === (coord.y - 1)) {
-            possible.delete('down');
-        }
-        if (y === coord.y && x === (coord.x + 1)) {
-            possible.delete('left');
-        }
-        if (y === coord.y && x === (coord.x - 1)) {
-            possible.delete('right');
-        }
+    console.log(request.body.board.snakes)
+    request.body.board.snakes.forEach(snake => {
+        snake.body.forEach(coord => {
+            if (x === coord.x && y === (coord.y + 1)) {
+                possible.delete('up');
+            }
+            if (x === coord.x && y === (coord.y - 1)) {
+                possible.delete('down');
+            }
+            if (y === coord.y && x === (coord.x + 1)) {
+                possible.delete('left');
+            }
+            if (y === coord.y && x === (coord.x - 1)) {
+                possible.delete('right');
+            }
+        });
     });
 
     console.log('possible', possible);
@@ -75,25 +78,26 @@ app.post('/move', (request, response) => {
     let nearest = 0;
     let nearestDist = width + height + 1;
 
-    request.body.board.food.forEach((coord, index) => {
-        let dist = Math.abs(coord.x - x) + Math.abs(coord.y - y);
+    request.body.board.food.forEach((c, i) => {
+        let dist = Math.abs(c.x - x) + Math.abs(c.y - y);
         if (dist < nearestDist) {
-            nearest = index;
+            nearestDist = dist;
+            nearest = i;
         }
     });
 
-    const food = request.body.board.food[nearest];
-    console.log('food', food);
+    const c = request.body.board.food[nearest] || {};
+    console.log('food', c.x, c.y);
 
     let move;
 
-    if (food.x === x && food.y < y && possible.has('up')) {
+    if (c.x === x && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (food.x === x && food.y > y && possible.has('down')) {
+    } else if (c.x === x && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (food.y === y && food.x > x && possible.has('right')) {
+    } else if (c.y === y && c.x > x && possible.has('right')) {
         move = 'right';
-    } else if (food.y === y && food.x < x && possible.has('left')) {
+    } else if (c.y === y && c.x < x && possible.has('left')) {
         move = 'left';
     } else if (possible.has(lastMove)) {
         move = lastMove;
@@ -103,6 +107,7 @@ app.post('/move', (request, response) => {
     }
 
     lastMove = move;
+    console.log('->', move);
     const data = {move};
 
     return response.json(data)
