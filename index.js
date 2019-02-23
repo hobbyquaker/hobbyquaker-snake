@@ -154,6 +154,7 @@ app.post('/move', (request, response) => {
 
 
     const {x, y} = request.body.you.body[0];
+    const health = request.body.you.health;
     console.log(request.body.turn, request.body.you.body[0]);
 
     let possible = new Set(['up', 'down', 'left', 'right']);
@@ -268,21 +269,21 @@ app.post('/move', (request, response) => {
 
     let move;
 
-    if (c.x === x && c.y < y && possible.has('up')) {
+    if (health < 50 && c.x === x && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (c.x === x && c.y > y && possible.has('down')) {
+    } else if (health < 50 && c.x === x && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (c.y === y && c.x > x && possible.has('right')) {
+    } else if (health < 50 && c.y === y && c.x > x && possible.has('right')) {
         move = 'right';
-    } else if (c.y === y && c.x < x && possible.has('left')) {
+    } else if (health < 50 && c.y === y && c.x < x && possible.has('left')) {
         move = 'left';
-    } else if (dy <= dx && c.y < y && possible.has('up')) {
+    } else if (health < 35 && dy <= dx && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (dy <= dx && c.y > y && possible.has('down')) {
+    } else if (health < 35 && dy <= dx && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (dx < dy && c.x < x && possible.has('left')) {
+    } else if (health < 35 && dx < dy && c.x < x && possible.has('left')) {
         move = 'left';
-    } else if (dx < dy && c.x > x && possible.has('right')) {
+    } else if (health < 35 && dx < dy && c.x > x && possible.has('right')) {
         move = 'right';
     } else if (possible.has(lastMove)) {
         move = lastMove;
