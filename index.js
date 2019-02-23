@@ -26,6 +26,7 @@ let height;
 let width;
 
 let lastMove;
+let directionHistory = [];
 let board = [];
 
 app.post('/start', (request, response) => {
@@ -76,9 +77,24 @@ function calculateScore(direction, x, y, r = 0) {
     if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height) {
         s += (board[nextX] && board[nextX][nextY] || 0);
 
-        return s;
 
         let possible = new Set(['up', 'down', 'left', 'right']);
+
+        switch (direction) {
+            case 'up':
+                possible.delete('down');
+                break;
+            case 'down':
+                possible.delete('up');
+                break;
+            case 'left':
+                possible.delete('right');
+                break;
+            case 'right':
+                possible.delete('left');
+                break;
+
+        }
 
         if (nextX === 0) {
             possible.delete('left');
@@ -104,9 +120,28 @@ function calculateScore(direction, x, y, r = 0) {
             possible.delete('down');
         }
 
-        console.log('nextPossible', possible);
+        if (!possible.has(direction)) return s;
 
-        possible.forEach(nextDirection => {
+        //console.log('nextPossible', direction, r, possible, nextX, nextY);
+
+        if (r > 2) return s;
+        let dirs = new Set(['up', 'down', 'left', 'right']);
+        switch (direction) {
+            case 'up':
+                dirs.delete('down');
+                break;
+            case 'down':
+                dirs.delete('up');
+                break;
+            case 'left':
+                dirs.delete('right');
+                break;
+            case 'right':
+                dirs.delete('left');
+                break;
+
+        }
+        dirs.forEach(nextDirection => {
             s += calculateScore(nextDirection, nextX, nextY, r + 1);
         });
     }
@@ -137,17 +172,18 @@ app.post('/move', (request, response) => {
 
     request.body.board.snakes.forEach(snake => {
         snake.body.forEach((c, i) => {
+            if (i === snake.body.length - 1) return;
             board[c.x][c.y] = 0;
-            if (x === c.x && (y === (c.y + 1) || y === (c.y + 2))) {
+            if (x === c.x && y === (c.y + 1)) {
                 possible.delete('up');
             }
-            if (x === c.x && (y === (c.y - 1) || y === (c.y - 2))) {
+            if (x === c.x && y === (c.y - 1)) {
                 possible.delete('down');
             }
-            if (y === c.y && (x === (c.x + 1) || x === (c.x + 2))) {
+            if (y === c.y && x === (c.x + 1)) {
                 possible.delete('left');
             }
-            if (y === c.y && (x === (c.x - 1) || x === (c.x - 2))) {
+            if (y === c.y && x === (c.x - 1)) {
                 possible.delete('right');
             }
         });
@@ -172,7 +208,7 @@ app.post('/move', (request, response) => {
         console.log(line);
     }
 
-    /*
+
     let score = {
         up: 0,
         down: 0,
@@ -192,11 +228,11 @@ app.post('/move', (request, response) => {
         }
     });
     possible.forEach(direction => {
-        if (score[direction] < maxScore) {
+        if (score[direction] < (maxScore / 10)) {
             possible.delete(direction);
         }
     });
-*/
+
     console.log('possible', possible);
 
     let nearest = 0;
@@ -213,6 +249,23 @@ app.post('/move', (request, response) => {
     const c = request.body.board.food[nearest] || {};
     console.log('food', c.x, c.y);
 
+    let dx = Math.abs(c.x - x);
+    let dy = Math.abs(c.y - y);
+
+
+    if (directionHistory[2] === 'left' && directionHistory[1] === 'up' && directionHistory[0] === 'right') {
+        possible.delete('down');
+    }
+    if (directionHistory[2] === 'left' && directionHistory[1] === 'down' && directionHistory[0] === 'right') {
+        possible.delete('up');
+    }
+    if (directionHistory[2] === 'up' && directionHistory[1] === 'right' && directionHistory[0] === 'down') {
+        possible.delete('left');
+    }
+    if (directionHistory[2] === 'up' && directionHistory[1] === 'left' && directionHistory[0] === 'down') {
+        possible.delete('right');
+    }
+
     let move;
 
     if (c.x === x && c.y < y && possible.has('up')) {
@@ -223,6 +276,14 @@ app.post('/move', (request, response) => {
         move = 'right';
     } else if (c.y === y && c.x < x && possible.has('left')) {
         move = 'left';
+    } else if (dy <= dx && c.y < y && possible.has('up')) {
+        move = 'up';
+    } else if (dy <= dx && c.y > y && possible.has('down')) {
+        move = 'down';
+    } else if (dx < dy && c.x < x && possible.has('left')) {
+        move = 'left';
+    } else if (dx < dy && c.x > x && possible.has('right')) {
+        move = 'right';
     } else if (possible.has(lastMove)) {
         move = lastMove;
     } else {
@@ -230,8 +291,17 @@ app.post('/move', (request, response) => {
         move = arrPossible[Math.floor(Math.random() * arrPossible.length)];
     }
 
+
     lastMove = move;
-    console.log('->', move);
+
+    if (directionHistory[directionHistory.length - 1] !== move) {
+        directionHistory.push(move);
+        if (directionHistory.length > 3) {
+            directionHistory.shift();
+        }
+    }
+
+    console.log('->', move, directionHistory);
     const data = {move};
 
     return response.json(data)
