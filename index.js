@@ -172,6 +172,7 @@ app.post('/move', (request, response) => {
         console.log(line);
     }
 
+    /*
     let score = {
         up: 0,
         down: 0,
@@ -195,7 +196,7 @@ app.post('/move', (request, response) => {
             possible.delete(direction);
         }
     });
-
+*/
     console.log('possible', possible);
 
     let nearest = 0;
