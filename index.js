@@ -260,10 +260,22 @@ app.post('/move', (request, response) => {
     if (directionHistory[2] === 'left' && directionHistory[1] === 'down' && directionHistory[0] === 'right') {
         possible.delete('up');
     }
+    if (directionHistory[2] === 'right' && directionHistory[1] === 'up' && directionHistory[0] === 'left') {
+        possible.delete('down');
+    }
+    if (directionHistory[2] === 'right' && directionHistory[1] === 'down' && directionHistory[0] === 'left') {
+        possible.delete('up');
+    }
     if (directionHistory[2] === 'up' && directionHistory[1] === 'right' && directionHistory[0] === 'down') {
         possible.delete('left');
     }
     if (directionHistory[2] === 'up' && directionHistory[1] === 'left' && directionHistory[0] === 'down') {
+        possible.delete('right');
+    }
+    if (directionHistory[2] === 'down' && directionHistory[1] === 'right' && directionHistory[0] === 'up') {
+        possible.delete('left');
+    }
+    if (directionHistory[2] === 'down' && directionHistory[1] === 'left' && directionHistory[0] === 'up') {
         possible.delete('right');
     }
 
