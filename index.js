@@ -138,16 +138,16 @@ app.post('/move', (request, response) => {
     request.body.board.snakes.forEach(snake => {
         snake.body.forEach((c, i) => {
             board[c.x][c.y] = 0;
-            if (x === c.x && y === (c.y + 1)) {
+            if (x === c.x && (y === (c.y + 1) || y === (c.y + 2))) {
                 possible.delete('up');
             }
-            if (x === c.x && y === (c.y - 1)) {
+            if (x === c.x && (y === (c.y - 1) || y === (c.y - 2))) {
                 possible.delete('down');
             }
-            if (y === c.y && x === (c.x + 1)) {
+            if (y === c.y && (x === (c.x + 1) || x === (c.x + 2))) {
                 possible.delete('left');
             }
-            if (y === c.y && x === (c.x - 1)) {
+            if (y === c.y && (x === (c.x - 1) || x === (c.x - 2))) {
                 possible.delete('right');
             }
         });
