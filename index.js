@@ -282,21 +282,21 @@ app.post('/move', (request, response) => {
 
     let move;
 
-    if (health < 70 && c.x === x && c.y < y && possible.has('up')) {
+    if (health < 85 && c.x === x && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (health < 70 && c.x === x && c.y > y && possible.has('down')) {
+    } else if (health < 85 && c.x === x && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (health < 70 && c.y === y && c.x > x && possible.has('right')) {
+    } else if (health < 85 && c.y === y && c.x > x && possible.has('right')) {
         move = 'right';
-    } else if (health < 70 && c.y === y && c.x < x && possible.has('left')) {
+    } else if (health < 85 && c.y === y && c.x < x && possible.has('left')) {
         move = 'left';
-    } else if (health < 65 && dy <= dx && c.y < y && possible.has('up')) {
+    } else if (health < 72 && dy <= dx && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (health < 65 && dy <= dx && c.y > y && possible.has('down')) {
+    } else if (health < 72 && dy <= dx && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (health < 65 && dx < dy && c.x < x && possible.has('left')) {
+    } else if (health < 72 && dx < dy && c.x < x && possible.has('left')) {
         move = 'left';
-    } else if (health < 65 && dx < dy && c.x > x && possible.has('right')) {
+    } else if (health < 72 && dx < dy && c.x > x && possible.has('right')) {
         move = 'right';
     } else if (possible.has(lastMove)) {
         move = lastMove;
