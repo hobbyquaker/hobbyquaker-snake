@@ -25,6 +25,8 @@ app.use(poweredByHandler)
 let height;
 let width;
 
+let lastMove;
+let board = [];
 
 app.post('/start', (request, response) => {
 
@@ -33,6 +35,14 @@ app.post('/start', (request, response) => {
 
     console.log('Start', width, height);
 
+
+    for (let x = 0; x < width; x++) {
+        board[x] = [];
+        for (let y = 0; y < height; y++) {
+            board[x][y] = 100;
+        }
+    }
+
     const data = {
         color: '#DFFF00',
     };
@@ -40,7 +50,6 @@ app.post('/start', (request, response) => {
     return response.json(data)
 });
 
-let lastMove;
 
 app.post('/move', (request, response) => {
 
@@ -48,29 +57,102 @@ app.post('/move', (request, response) => {
     const {x, y} = request.body.you.body[0];
     console.log(request.body.turn, request.body.you.body[0]);
 
-    const possible = new Set(['up', 'down', 'left', 'right']);
+    let possible = new Set(['up', 'down', 'left', 'right']);
 
     if (x === 0) possible.delete('left');
     if (x === (width - 1)) possible.delete('right');
     if (y === 0) possible.delete('up');
     if (y === (height - 1)) possible.delete('down');
 
-    console.log(request.body.board.snakes)
+
+    for (let vx = 0; vx < width; vx++) {
+        for (let vy = 0; vy < height; vy++) {
+            board[vx][vy] = 100;
+        }
+    }
+
     request.body.board.snakes.forEach(snake => {
-        snake.body.forEach(coord => {
-            if (x === coord.x && y === (coord.y + 1)) {
+        snake.body.forEach((c, i) => {
+            board[c.x][c.y] = 0;
+            if (x === c.x && y === (c.y + 1)) {
                 possible.delete('up');
             }
-            if (x === coord.x && y === (coord.y - 1)) {
+            if (x === c.x && y === (c.y - 1)) {
                 possible.delete('down');
             }
-            if (y === coord.y && x === (coord.x + 1)) {
+            if (y === c.y && x === (c.x + 1)) {
                 possible.delete('left');
             }
-            if (y === coord.y && x === (coord.x - 1)) {
+            if (y === c.y && x === (c.x - 1)) {
                 possible.delete('right');
             }
         });
+    });
+
+    board[x][y] = 1;
+
+    for (let vy = 0; vy < height; vy++) {
+        let line = '';
+        for (let vx = 0; vx < width; vx++) {
+            switch (board[vx][vy]) {
+                case 100:
+                    line += ' * ';
+                    break;
+                case 1:
+                    line += ' o ';
+                    break;
+                default:
+                    line += '   ';
+            }
+        }
+        console.log(line);
+    }
+
+    let score = {
+        up: 0,
+        down: 0,
+        left: 0,
+        right: 0
+    };
+    possible.forEach(direction => {
+        let nextDirection = direction;
+        let nextX = x;
+        let nextY = y;
+        for (let i = 0; i < 2; i++) {
+            switch (nextDirection) {
+                case 'right':
+                    nextX += 1;
+                    break;
+                case 'left':
+                    nextX -= 1;
+                    break;
+                case 'up':
+                    nextY -= 1;
+                    break;
+                case 'down':
+                    nextY += 1;
+                    break;
+                default:
+
+            }
+            if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height) {
+                score[direction] += (board[nextX][nextY] || 0);
+            }
+
+        }
+        console.log('score', direction, score[direction]);
+    });
+
+    let maxScore = 0;
+    possible.forEach(direction => {
+        if (score[direction] > maxScore) {
+            maxScore = score[direction];
+        }
+    });
+    possible.forEach(direction => {
+        if (score[direction] < maxScore) {
+            possible.delete(direction);
+        }
     });
 
     console.log('possible', possible);
