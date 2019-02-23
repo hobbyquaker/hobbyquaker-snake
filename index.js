@@ -51,6 +51,70 @@ app.post('/start', (request, response) => {
 });
 
 
+
+function calculateScore(direction, x, y, r = 0) {
+    let s = 0;
+    let nextX = x;
+    let nextY = y;
+
+    switch (direction) {
+        case 'right':
+            nextX += 1;
+            break;
+        case 'left':
+            nextX -= 1;
+            break;
+        case 'up':
+            nextY -= 1;
+            break;
+        case 'down':
+            nextY += 1;
+            break;
+        default:
+
+    }
+    if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height) {
+        s += (board[nextX] && board[nextX][nextY] || 0);
+
+        return s;
+
+        let possible = new Set(['up', 'down', 'left', 'right']);
+
+        if (nextX === 0) {
+            possible.delete('left');
+        } else if (board[nextX - 1][nextY] < 100) {
+            possible.delete('left');
+        }
+
+        if (nextX === (width - 1)) {
+            possible.delete('right');
+        } else if (board[nextX + 1][nextY] < 100) {
+            possible.delete('right');
+        }
+
+        if (nextY === 0) {
+            possible.delete('up');
+        } else if (board[nextX][nextY - 1] < 100) {
+            possible.delete('up');
+        }
+
+        if (nextY === (height - 1)) {
+            possible.delete('down');
+        } else if (board[nextX][nextY + 1] < 100) {
+            possible.delete('down');
+        }
+
+        console.log('nextPossible', possible);
+
+        possible.forEach(nextDirection => {
+            s += calculateScore(nextDirection, nextX, nextY, r + 1);
+        });
+    }
+
+    return s;
+}
+
+
 app.post('/move', (request, response) => {
 
 
@@ -96,13 +160,13 @@ app.post('/move', (request, response) => {
         for (let vx = 0; vx < width; vx++) {
             switch (board[vx][vy]) {
                 case 100:
-                    line += ' * ';
+                    line += ' . ';
                     break;
                 case 1:
                     line += ' o ';
                     break;
                 default:
-                    line += '   ';
+                    line += ' * ';
             }
         }
         console.log(line);
@@ -115,33 +179,10 @@ app.post('/move', (request, response) => {
         right: 0
     };
     possible.forEach(direction => {
-        let nextDirection = direction;
-        let nextX = x;
-        let nextY = y;
-        for (let i = 0; i < 2; i++) {
-            switch (nextDirection) {
-                case 'right':
-                    nextX += 1;
-                    break;
-                case 'left':
-                    nextX -= 1;
-                    break;
-                case 'up':
-                    nextY -= 1;
-                    break;
-                case 'down':
-                    nextY += 1;
-                    break;
-                default:
-
-            }
-            if (nextX >= 0 && nextX < width && nextY >= 0 && nextY < height) {
-                score[direction] += (board[nextX][nextY] || 0);
-            }
-
-        }
-        console.log('score', direction, score[direction]);
+        score[direction] = calculateScore(direction, x, y);
     });
+
+    console.log(score);
 
     let maxScore = 0;
     possible.forEach(direction => {
