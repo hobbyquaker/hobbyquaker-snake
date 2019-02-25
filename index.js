@@ -188,16 +188,16 @@ app.post('/move', (request, response) => {
                 }
             }
             board[c.x][c.y] = 0;
-            if (x === c.x && y === (c.y + 1)) {
+            if (board[x] === 0 && board[y - 1] === 0) {
                 possible.delete('up');
             }
-            if (x === c.x && y === (c.y - 1)) {
+            if (board[x] === 0 && board[y + 1] === 0) {
                 possible.delete('down');
             }
-            if (y === c.y && x === (c.x + 1)) {
+            if (board[x - 1] === 0 && board[y] === 0) {
                 possible.delete('left');
             }
-            if (y === c.y && x === (c.x - 1)) {
+            if (board[x + 1] === 0 && board[y] === 0) {
                 possible.delete('right');
             }
         });
