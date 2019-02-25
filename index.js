@@ -28,6 +28,7 @@ let width;
 let lastMove;
 let directionHistory = [];
 let board = [];
+let sameDirectionTurns = 0;
 
 app.post('/start', (request, response) => {
 
@@ -124,7 +125,7 @@ function calculateScore(direction, x, y, r = 0) {
 
         //console.log('nextPossible', direction, r, possible, nextX, nextY);
 
-        if (r > 2) return s;
+        if (r > 3) return s;
         let dirs = new Set(['up', 'down', 'left', 'right']);
         switch (direction) {
             case 'up':
@@ -174,6 +175,18 @@ app.post('/move', (request, response) => {
     request.body.board.snakes.forEach(snake => {
         snake.body.forEach((c, i) => {
             if (i === snake.body.length - 1) return;
+            if (i === 0) {
+                if (c.x > 0) {
+                    board[c.x - 1][c.y] = 0;
+                } else if (c.x < (width - 1)) {
+                    board[c.x + 1][c.y] = 0;
+                }
+                if (c.y > 0) {
+                    board[c.x][c.y - 1] = 0;
+                } else if (c.x < (height - 1)) {
+                    board[c.x][c.y + 1] = 0;
+                }
+            }
             board[c.x][c.y] = 0;
             if (x === c.x && y === (c.y + 1)) {
                 possible.delete('up');
@@ -222,13 +235,14 @@ app.post('/move', (request, response) => {
 
     console.log(score);
 
-    /*
+
     let maxScore = 0;
     possible.forEach(direction => {
         if (score[direction] > maxScore) {
             maxScore = score[direction];
         }
     });
+    /*
     possible.forEach(direction => {
         if (score[direction] < (maxScore / 10)) {
             possible.delete(direction);
@@ -255,54 +269,95 @@ app.post('/move', (request, response) => {
     let dx = Math.abs(c.x - x);
     let dy = Math.abs(c.y - y);
 
-    if (possible.length > 1) {
-        if (directionHistory[3] === 'down' && directionHistory[2] === 'left' && directionHistory[1] === 'up' && directionHistory[0] === 'right') {
+    console.log('history', directionHistory, sameDirectionTurns);
+
+    if (possible.size > 1 && sameDirectionTurns < 3) {
+        if (/* directionHistory[3] === 'down' && */ directionHistory[0] === 'left' && directionHistory[1] === 'up' && directionHistory[2] === 'right') {
             possible.delete('down');
         }
-        if (directionHistory[3] === 'up' && directionHistory[2] === 'left' && directionHistory[1] === 'down' && directionHistory[0] === 'right') {
+        if (/* directionHistory[3] === 'up' && */ directionHistory[0] === 'left' && directionHistory[1] === 'down' && directionHistory[2] === 'right') {
             possible.delete('up');
         }
-        if (directionHistory[3] === 'down' && directionHistory[2] === 'right' && directionHistory[1] === 'up' && directionHistory[0] === 'left') {
+        if (/* directionHistory[3] === 'down' && */ directionHistory[0] === 'right' && directionHistory[1] === 'up' && directionHistory[2] === 'left') {
             possible.delete('down');
         }
-        if (directionHistory[3] === 'up' && directionHistory[2] === 'right' && directionHistory[1] === 'down' && directionHistory[0] === 'left') {
+        if (/* directionHistory[3] === 'up' && */ directionHistory[0] === 'right' && directionHistory[1] === 'down' && directionHistory[2] === 'left') {
             possible.delete('up');
         }
-        if (directionHistory[3] === 'left' && directionHistory[2] === 'up' && directionHistory[1] === 'right' && directionHistory[0] === 'down') {
+        if (/* directionHistory[3] === 'left' && */ directionHistory[0] === 'up' && directionHistory[1] === 'right' && directionHistory[2] === 'down') {
             possible.delete('left');
         }
-        if (directionHistory[3] === 'right' && directionHistory[2] === 'up' && directionHistory[1] === 'left' && directionHistory[0] === 'down') {
+        if (/* directionHistory[3] === 'right' && */ directionHistory[0] === 'up' && directionHistory[1] === 'left' && directionHistory[2] === 'down') {
             possible.delete('right');
         }
-        if (directionHistory[3] === 'left' && directionHistory[2] === 'down' && directionHistory[1] === 'right' && directionHistory[0] === 'up') {
+        if (/* directionHistory[3] === 'left' && */ directionHistory[0] === 'down' && directionHistory[1] === 'right' && directionHistory[2] === 'up') {
             possible.delete('left');
         }
-        if (directionHistory[3] === 'right' && directionHistory[2] === 'down' && directionHistory[1] === 'left' && directionHistory[0] === 'up') {
+        if (/* directionHistory[3] === 'right' && */ directionHistory[0] === 'down' && directionHistory[1] === 'left' && directionHistory[2] === 'up') {
             possible.delete('right');
         }
     }
 
-    let move;
+    console.log('possible after circle prevention', possible);
 
-    if (health < 75 && c.x === x && c.y < y && possible.has('up')) {
+    if (possible.size > 1 && health > 50) {
+        if ((width - x) < 4) {
+            possible.delete('right');
+        } else if (x < 3) {
+            possible.delete('left');
+        }
+    }
+    if (possible.size > 1 && health > 50) {
+        if ((height - y) < 4) {
+            possible.delete('down');
+        } else if (y < 3) {
+            possible.delete('up');
+        }
+    }
+    console.log('possible after nearwall prevention', possible);
+
+    let move;
+    
+    const healthMaxDirect = 80;
+    const healthMax = 90;
+
+    if (health < healthMaxDirect && c.x === x && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (health < 75 && c.x === x && c.y > y && possible.has('down')) {
+        console.log('food direct', move);
+    } else if (health < healthMaxDirect && c.x === x && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (health < 75 && c.y === y && c.x > x && possible.has('right')) {
+        console.log('food direct', move);
+    } else if (health < healthMaxDirect && c.y === y && c.x > x && possible.has('right')) {
         move = 'right';
-    } else if (health < 75 && c.y === y && c.x < x && possible.has('left')) {
+        console.log('food direct', move);
+    } else if (health < healthMaxDirect && c.y === y && c.x < x && possible.has('left')) {
         move = 'left';
-    } else if (health < 80 && dy <= dx && c.y < y && possible.has('up')) {
+        console.log('food direct', move);
+    } else if (health < healthMax && dy <= dx && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (health < 80 && dy <= dx && c.y > y && possible.has('down')) {
+        console.log('food', move);
+    } else if (health < healthMax && dy <= dx && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (health < 80 && dx < dy && c.x < x && possible.has('left')) {
+        console.log('food', move);
+    } else if (health < healthMax && dx < dy && c.x < x && possible.has('left')) {
         move = 'left';
-    } else if (health < 80 && dx < dy && c.x > x && possible.has('right')) {
+        console.log('food', move);
+    } else if (health < healthMax && dx < dy && c.x > x && possible.has('right')) {
         move = 'right';
+        console.log('food', move);
     } else if (possible.has(lastMove)) {
         move = lastMove;
+    } else if (possible.size === 1) {
+        move = [...possible][0];
+        console.log('last chance', move);
     } else {
+        possible.forEach(d => {
+            if (score[d] < (maxScore / 1.05)) {
+                possible.delete(d);
+            }
+        });
+
+        console.log('random', possible);
         const arrPossible = Array.from(possible);
         move = arrPossible[Math.floor(Math.random() * arrPossible.length)];
     }
@@ -312,12 +367,15 @@ app.post('/move', (request, response) => {
 
     if (directionHistory[directionHistory.length - 1] !== move) {
         directionHistory.push(move);
-        if (directionHistory.length > 4) {
+        if (directionHistory.length > 3) {
             directionHistory.shift();
         }
+        sameDirectionTurns = 0;
+    } else {
+        sameDirectionTurns += 1;
     }
 
-    console.log('->', move, directionHistory);
+    console.log('->', move);
     const data = {move};
 
     return response.json(data)
