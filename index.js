@@ -174,8 +174,8 @@ app.post('/move', (request, response) => {
 
     request.body.board.snakes.forEach(snake => {
         snake.body.forEach((c, i) => {
-            if (i === 0) return;
-            if (i === snake.body.length - 1) {
+            if (i === (snake.body.length - 1)) return;
+            if (i === 0 && snake.id !== request.body.you.id) {
                 if (c.x > 0) {
                     board[c.x - 1][c.y] = 0;
                 } else if (c.x < (width - 1)) {
