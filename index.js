@@ -222,6 +222,7 @@ app.post('/move', (request, response) => {
 
     console.log(score);
 
+    /*
     let maxScore = 0;
     possible.forEach(direction => {
         if (score[direction] > maxScore) {
@@ -233,6 +234,7 @@ app.post('/move', (request, response) => {
             possible.delete(direction);
         }
     });
+    */
 
     console.log('possible', possible);
 
@@ -254,49 +256,49 @@ app.post('/move', (request, response) => {
     let dy = Math.abs(c.y - y);
 
     if (possible.length > 1) {
-        if (directionHistory[2] === 'left' && directionHistory[1] === 'up' && directionHistory[0] === 'right') {
+        if (directionHistory[3] === 'down' && directionHistory[2] === 'left' && directionHistory[1] === 'up' && directionHistory[0] === 'right') {
             possible.delete('down');
         }
-        if (directionHistory[2] === 'left' && directionHistory[1] === 'down' && directionHistory[0] === 'right') {
+        if (directionHistory[3] === 'up' && directionHistory[2] === 'left' && directionHistory[1] === 'down' && directionHistory[0] === 'right') {
             possible.delete('up');
         }
-        if (directionHistory[2] === 'right' && directionHistory[1] === 'up' && directionHistory[0] === 'left') {
+        if (directionHistory[3] === 'down' && directionHistory[2] === 'right' && directionHistory[1] === 'up' && directionHistory[0] === 'left') {
             possible.delete('down');
         }
-        if (directionHistory[2] === 'right' && directionHistory[1] === 'down' && directionHistory[0] === 'left') {
+        if (directionHistory[3] === 'up' && directionHistory[2] === 'right' && directionHistory[1] === 'down' && directionHistory[0] === 'left') {
             possible.delete('up');
         }
-        if (directionHistory[2] === 'up' && directionHistory[1] === 'right' && directionHistory[0] === 'down') {
+        if (directionHistory[3] === 'left' && directionHistory[2] === 'up' && directionHistory[1] === 'right' && directionHistory[0] === 'down') {
             possible.delete('left');
         }
-        if (directionHistory[2] === 'up' && directionHistory[1] === 'left' && directionHistory[0] === 'down') {
+        if (directionHistory[3] === 'right' && directionHistory[2] === 'up' && directionHistory[1] === 'left' && directionHistory[0] === 'down') {
             possible.delete('right');
         }
-        if (directionHistory[2] === 'down' && directionHistory[1] === 'right' && directionHistory[0] === 'up') {
+        if (directionHistory[3] === 'left' && directionHistory[2] === 'down' && directionHistory[1] === 'right' && directionHistory[0] === 'up') {
             possible.delete('left');
         }
-        if (directionHistory[2] === 'down' && directionHistory[1] === 'left' && directionHistory[0] === 'up') {
+        if (directionHistory[3] === 'right' && directionHistory[2] === 'down' && directionHistory[1] === 'left' && directionHistory[0] === 'up') {
             possible.delete('right');
         }
     }
 
     let move;
 
-    if (health < 85 && c.x === x && c.y < y && possible.has('up')) {
+    if (health < 75 && c.x === x && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (health < 85 && c.x === x && c.y > y && possible.has('down')) {
+    } else if (health < 75 && c.x === x && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (health < 85 && c.y === y && c.x > x && possible.has('right')) {
+    } else if (health < 75 && c.y === y && c.x > x && possible.has('right')) {
         move = 'right';
-    } else if (health < 85 && c.y === y && c.x < x && possible.has('left')) {
+    } else if (health < 75 && c.y === y && c.x < x && possible.has('left')) {
         move = 'left';
-    } else if (health < 72 && dy <= dx && c.y < y && possible.has('up')) {
+    } else if (health < 80 && dy <= dx && c.y < y && possible.has('up')) {
         move = 'up';
-    } else if (health < 72 && dy <= dx && c.y > y && possible.has('down')) {
+    } else if (health < 80 && dy <= dx && c.y > y && possible.has('down')) {
         move = 'down';
-    } else if (health < 72 && dx < dy && c.x < x && possible.has('left')) {
+    } else if (health < 80 && dx < dy && c.x < x && possible.has('left')) {
         move = 'left';
-    } else if (health < 72 && dx < dy && c.x > x && possible.has('right')) {
+    } else if (health < 80 && dx < dy && c.x > x && possible.has('right')) {
         move = 'right';
     } else if (possible.has(lastMove)) {
         move = lastMove;
@@ -310,7 +312,7 @@ app.post('/move', (request, response) => {
 
     if (directionHistory[directionHistory.length - 1] !== move) {
         directionHistory.push(move);
-        if (directionHistory.length > 3) {
+        if (directionHistory.length > 4) {
             directionHistory.shift();
         }
     }
