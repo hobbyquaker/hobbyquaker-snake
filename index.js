@@ -349,8 +349,14 @@ app.post('/move', (request, response) => {
         move = lastMove;
     } else if (possible.size === 1) {
         move = [...possible][0];
-        console.log('last chance', move);
+        console.log('only 1 possibility left', move);
     } else {
+        if (possible.size === 0) {
+            if (x > 0 && board[x - 1][y]) possible.add('left');
+            if (x < (width - 1) && board[x + 1][y]) possible.add('right');
+            if (y > 0 && board[x][y - 1]) possible.add('up');
+            if (y < (height - 1) && board[x][y + 1]) possible.add('down');
+        }
         possible.forEach(d => {
             if (score[d] < (maxScore / 1.05)) {
                 possible.delete(d);
