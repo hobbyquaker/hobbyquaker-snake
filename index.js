@@ -183,11 +183,15 @@ app.post('/move', (request, response) => {
         possible.delete('down');
     }
 
+    console.log('possible after wall prevention', possible);
+
     for (let vx = 0; vx < state[game].width; vx++) {
         for (let vy = 0; vy < state[game].height; vy++) {
             state[game].board[vx][vy] = 100;
         }
     }
+
+    console.log('board cleared');
 
     request.body.board.snakes.forEach(snake => {
         snake.body.forEach((c, i) => {
@@ -213,19 +217,19 @@ app.post('/move', (request, response) => {
             }
 
             state[game].board[c.x][c.y] = 0;
-            if (state[game].board[x][y - 1] === 0) {
+            if (y > 0 && state[game].board[x][y - 1] === 0) {
                 possible.delete('up');
             }
 
-            if (state[game].board[x][y + 1] === 0) {
+            if (y < (state[game].height - 1) && state[game].board[x][y + 1] === 0) {
                 possible.delete('down');
             }
 
-            if (state[game].board[x - 1][y] === 0) {
+            if (x > 0 && state[game].board[x - 1][y] === 0) {
                 possible.delete('left');
             }
 
-            if (state[game].board[x + 1][y] === 0) {
+            if (x < (state[game].width - 1) && state[game].board[x + 1][y] === 0) {
                 possible.delete('right');
             }
         });
