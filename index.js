@@ -161,6 +161,7 @@ app.post('/move', (request, response) => {
     const game = request.body.game.id;
 
     const {x, y} = request.body.you.body[0];
+    const myLength = request.body.you.body.length;
     const {health} = request.body.you;
     console.log(request.body.turn, request.body.you.body[0]);
 
@@ -195,16 +196,19 @@ app.post('/move', (request, response) => {
             }
 
             if (i === 0 && snake.id !== request.body.you.id) {
-                if (c.x > 0) {
-                    state[game].board[c.x - 1][c.y] = 0;
-                } else if (c.x < (state[game].width - 1)) {
-                    state[game].board[c.x + 1][c.y] = 0;
-                }
+                const enemyLength = snake.body.length;
+                if (myLength < enemyLength) {
+                    if (c.x > 0) {
+                        state[game].board[c.x - 1][c.y] = 0;
+                    } else if (c.x < (state[game].width - 1)) {
+                        state[game].board[c.x + 1][c.y] = 0;
+                    }
 
-                if (c.y > 0) {
-                    state[game].board[c.x][c.y - 1] = 0;
-                } else if (c.y < (state[game].height - 1)) {
-                    state[game].board[c.x][c.y + 1] = 0;
+                    if (c.y > 0) {
+                        state[game].board[c.x][c.y - 1] = 0;
+                    } else if (c.y < (state[game].height - 1)) {
+                        state[game].board[c.x][c.y + 1] = 0;
+                    }
                 }
             }
 
@@ -294,7 +298,7 @@ app.post('/move', (request, response) => {
 
     console.log('history', state[game].directionHistory, state[game].sameDirectionTurns);
 
-    if (possible.size > 1 && state[game].sameDirectionTurns < 3) {
+    if (possible.size > 1 && state[game].sameDirectionTurns < 6) {
         if (/* state[game].directionHistory[3] === 'down' && */ state[game].directionHistory[0] === 'left' && state[game].directionHistory[1] === 'up' && state[game].directionHistory[2] === 'right') {
             possible.delete('down');
         }
@@ -431,17 +435,11 @@ app.post('/move', (request, response) => {
     return response.json(data);
 });
 
-app.post('/end', (request, response) => {
-    // NOTE: Any cleanup when a game is complete.
-    return response.json({});
-});
 
 app.post('/ping', (request, response) => {
     // Used for checking if this snake is still alive.
     return response.json({});
 });
-
-// --- SNAKE LOGIC GOES ABOVE THIS LINE ---
 
 app.use('*', fallbackHandler);
 app.use(notFoundHandler);
